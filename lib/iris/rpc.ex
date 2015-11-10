@@ -1,12 +1,4 @@
 defmodule Iris.RPC do
-  # defmacro allowed_calls, do: @allowed_calls
-  # defmacro set_allowed_calls(list) do
-  #   quote do
-  #     @allowed_calls %{
-  #       Enum.map
-  #     }
-  #   end
-  # end
 
   @doc """
   mfa is a list of: module, function, args.
@@ -28,7 +20,12 @@ defmodule Iris.RPC do
       {module, fun, args} = parse_input(mfa, opts)
       {:ok, dispatch(module, fun, args, opts)}
     rescue
-      ArgumentError -> {:error, "Invalid Call"}
+      error -> config =  Application.get_env(:iris, Iris)
+        if config && config[:debug] do
+          raise error
+        else
+          {:error, "Invalid Call"}
+        end
     end
   end
 
@@ -54,7 +51,12 @@ defmodule Iris.RPC do
       {module, fun, args} = parse_input(mfa, opts)
       {:ok, dispatch(module, fun, [assigns] ++ args, opts)}
     rescue
-      ArgumentError -> {:error, "Invalid Call"}
+      error -> config =  Application.get_env(:iris, Iris)
+        if config && config[:debug] do
+          raise error
+        else
+          {:error, "Invalid Call"}
+        end
     end
   end
 
@@ -77,7 +79,7 @@ defmodule Iris.RPC do
     if call_allowed?(module, fun, args, opts) do
       apply(module, fun, args)
     else
-      raise ArgumentError
+      raise PermissionError
     end
   end
 
@@ -90,9 +92,12 @@ defmodule Iris.RPC do
       |> Dict.get(fun)
       |> Enum.member? length(args)
     rescue
-      Protocol.UndefinedError -> false
-      ArgumentError -> false
+      _ -> false
     end
   end
 
+end
+
+defmodule PermissionError do
+  defexception message: "call not allowed"
 end

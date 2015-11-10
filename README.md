@@ -24,17 +24,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 #### Description ####
-Iris checks calls against an allow list before proceeding to dispatch them. It takes a list containing the [Module, Function, Args], aka MFA, as specified in the docs and shown in tests. Iris will only convert strings to existing atoms in an effort to prevent unlimited atoms from being created.
+Iris checks calls against an allowlist before proceeding to dispatch them. It takes a list containing the [Module, Function, Args], aka MFA, as specified in the docs and shown in tests. Iris will only convert strings to existing atoms in an effort to prevent unlimited atoms from being created. Furthermore, Iris traps all exceptions and returns {:error, "Invalid Call"}, allowing for the transport layer to communicate a failure to the requester (This can be disabled by `debug: true`, see #Config).
 
-Iris can optionally add an `assigns` parameter which will be passed as the first argument to the function being requested. This is particularly useful to add local data to the RPC call, ex.) session information for a user.
+Iris can optionally add an `assigns` parameter which will be passed as the first argument to the function being requested. This is particularly useful to add local data to the RPC call, ex.) session information for a user. See `process_call/3`. Remember, if using `process_call/3`, that the assigns counts as an argument when specifying the arity in config.
 
-`mod_prefix` can also be used to "namespace" the module string, this can help to hide the app structure, or add another layer of defense; assuming the allow list failed, or the wrong module is accidently added.
+`mod_prefix` can also be used to "namespace" the module string, this can help to hide the app structure, or add another layer of defense; assuming the allowlist failed, or the wrong module is accidently added.
 
 
 #### Config ####
-Iris is easily configured and allows for multiple option sets. The key `:public` or `:private` is used to specify groupings of allowed calls and module prefixes. These groupings can be used to compose forms of MAC or other authentication layers. See `config.exs` and the tests to get a better idea.
+Iris is easily configured and allows for multiple option sets. In the following example, the key `:public` or `:private` is used to specify groupings of allowed calls and module prefixes. These groupings can be used to compose forms of MAC or other authorization layers. See `config.exs` and the tests to get a better idea.
+
+The general form of an allowlist is a map where the keys are the module atoms, pointing to a submap where the keys are the function atoms, and the value is a list specifying the arity of the functions. Ex.) `:"Elixir.Iris.Test.TestModule" => %{test_public: [1,2]}` would specify the `Elixir.Iris.Test.TestModule`, function `test_public` of arity 1, or 2. Remember, if using `process_call/3`, that the assigns counts as an argument.
+
 
 ```
+config :iris, Iris,
+  debug: false
+
 config :iris, :public,
   allow: %{
     :"Elixir.Iris.Test.TestModule" => %{test_public: [1]}
