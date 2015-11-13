@@ -13,16 +13,18 @@ defmodule Iris.RPC do
 
   opts_key is the key used in your mix config, allowing multiple configs.
   """
-  @spec process_call(list, atom) :: {:ok, any} | {:error, binary}
+  @spec process_call(list, atom) :: {:ok, any} | {:error, binary} | no_return
   def process_call(mfa, opts_key) do
     opts = Application.get_env(:iris, opts_key)
     try do
       {module, fun, args} = parse_input(mfa, opts)
       {:ok, dispatch(module, fun, args, opts)}
     rescue
-      error -> config =  Application.get_env(:iris, Iris)
+      exception ->
+        stacktrace = System.stacktrace
+        config =  Application.get_env(:iris, Iris)
         if config && config[:debug] do
-          raise error
+          reraise exception, stacktrace
         else
           {:error, "Invalid Call"}
         end
@@ -44,16 +46,18 @@ defmodule Iris.RPC do
   assigns is any type of data to pass along to the mfa being called. It is
   prepended to the args list before calling dispatch/4.
   """
-  @spec process_call(list, atom, any) :: {:ok, any} | {:error, binary}
+  @spec process_call(list, atom, any) :: {:ok, any} | {:error, binary} | no_return
   def process_call(mfa, opts_key, assigns) do
     opts = Application.get_env(:iris, opts_key)
     try do
       {module, fun, args} = parse_input(mfa, opts)
       {:ok, dispatch(module, fun, [assigns] ++ args, opts)}
     rescue
-      error -> config =  Application.get_env(:iris, Iris)
+      exception ->
+        stacktrace = System.stacktrace
+        config =  Application.get_env(:iris, Iris)
         if config && config[:debug] do
-          raise error
+          reraise exception, stacktrace
         else
           {:error, "Invalid Call"}
         end
@@ -74,12 +78,12 @@ defmodule Iris.RPC do
     {module, fun, args}
   end
 
-  @spec dispatch(atom, atom, list, list) :: any
+  @spec dispatch(atom, atom, list, list) :: any | no_return
   def dispatch(module, fun, args, opts) do
     if call_allowed?(module, fun, args, opts) do
       apply(module, fun, args)
     else
-      raise PermissionError
+      raise PermissionError, message: "Call #{inspect module}:#{inspect fun}:#{inspect args} not allowed"
     end
   end
 
@@ -99,5 +103,5 @@ defmodule Iris.RPC do
 end
 
 defmodule PermissionError do
-  defexception message: "call not allowed"
+  defexception message: "Call not allowed"
 end
