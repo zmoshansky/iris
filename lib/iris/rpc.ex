@@ -94,7 +94,7 @@ defmodule Iris.RPC do
       opts[:allow]
       |> Dict.get(module)
       |> Dict.get(fun)
-      |> Enum.member? length(args)
+      |> Enum.member?(length(args))
     rescue
       _ -> false
     end
