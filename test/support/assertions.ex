@@ -1,6 +1,6 @@
 defmodule Iris.Test.Assertions do
   @moduledoc """
-    Unwraps the authentication results and assert {:ok, _} | {:error, _}
+    Unwraps the authentication results and assert the tuple starts with :ok, or :error
   """
   require ExUnit.Assertions
 
@@ -8,18 +8,18 @@ defmodule Iris.Test.Assertions do
 
   defmacro assert_ok(arg) do
     quote do
-      case unquote(arg) do
-        {:ok, _} -> pass
-        {:error, msg} -> flunk msg
+      case Tuple.to_list(unquote(arg)) do
+        [:ok|_] -> pass
+        [:error| [msg |t]] -> flunk
       end
     end
   end
 
   defmacro refute_ok(arg) do
     quote do
-      case unquote(arg) do
-        {:ok, msg} -> flunk msg
-        {:error, _} -> pass
+      case Tuple.to_list(unquote(arg)) do
+        [:ok| [msg |t]] -> flunk
+        [:error|_] -> pass
       end
     end
   end

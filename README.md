@@ -24,7 +24,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 #### Description ####
-Iris checks calls against an allowlist before proceeding to dispatch them. It takes a list containing the [Module, Function, Args], aka MFA, as specified in the docs and shown in tests. Iris will only convert strings to existing atoms in an effort to prevent unlimited atoms from being created. Furthermore, Iris traps all exceptions and returns {:error, "Invalid Call"}, allowing for the transport layer to communicate a failure to the requester (This can be disabled by `debug: true`, see #Config).
+Iris checks calls against an allowlist before proceeding to dispatch them. It takes a list containing the [Module, Function, Args], aka MFA, as specified in the docs and shown in tests. Iris will only convert strings to existing atoms in an effort to prevent unlimited atoms from being created. Furthermore, Iris traps all exceptions and returns {:error, Iris.Errors.*, mfa_or_raw_params}, allowing for the transport layer to communicate a failure to the requester. This can be disabled by `debug: true`(see #Config). Note: Iris needs to be re-compiled after changing `:debug`, this is due to it being optimized out at compile time.
 
 Iris can optionally add an `assigns` parameter which will be passed as the first argument to the function being requested. This is particularly useful to add local data to the RPC call, ex.) session information for a user. See `process_call/3`. Remember, if using `process_call/3`, that the assigns counts as an argument when specifying the arity in config.
 
@@ -38,6 +38,7 @@ The general form of an allowlist is a map where the keys are the module atoms, p
 
 
 ```
+# **NOTE**: Iris must be compiled after changing debug. (mix deps.clean iris && mix deps.compile iris)
 config :iris, Iris,
   debug: false
 
