@@ -4,7 +4,7 @@ defmodule Iris.Mixfile do
   def project do
     [
       app: :iris,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.0",
       elixirc_paths: elixirc_paths(Mix.env),
       description: description,
@@ -27,11 +27,11 @@ defmodule Iris.Mixfile do
 
 
   defp applications(:test) do
-    [:logger] ++ applications(:prod)
+    applications(:prod)
   end
 
   defp applications(_) do
-    []
+    [:logger]
   end
 
   defp deps do
@@ -45,7 +45,7 @@ defmodule Iris.Mixfile do
     [
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Zachary Moshansky"],
-      licenses: ["BSD 3-Clause"],
+      licenses: ["MIT", "APACHE 2.0"],
       links: %{"GitHub" => "https://github.com/zmoshansky/iris"}
     ]
   end

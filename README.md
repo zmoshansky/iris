@@ -23,6 +23,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+#### License #####
+Apache 2.0 or MIT
+
 #### Description ####
 Iris checks calls against an allowlist before proceeding to dispatch them. It takes a list containing the [Module, Function, Args], aka MFA, as specified in the docs and shown in tests. Iris will only convert strings to existing atoms in an effort to prevent unlimited atoms from being created. Furthermore, Iris traps all exceptions and returns {:error, Iris.Errors.*, mfa_or_raw_params}, allowing for the transport layer to communicate a failure to the requester. This can be disabled by `debug: true`(see #Config). Note: Iris needs to be re-compiled after changing `:debug`, this is due to it being optimized out at compile time.
 
@@ -40,7 +43,7 @@ The general form of an allowlist is a map where the keys are the module atoms, p
 ```
 # **NOTE**: Iris must be compiled after changing debug. (mix deps.clean iris && mix deps.compile iris)
 config :iris, Iris,
-  debug: false
+  error: :log
 
 config :iris, :public,
   allow: %{

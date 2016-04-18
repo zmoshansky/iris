@@ -1,4 +1,5 @@
 defmodule Iris.RPC do
+  require Logger
   @moduledoc """
   process_call[/2|/3] both exist so `assigns` doesn't carry a penalty if not used,
   or limit the ability to have `assigns=nil` | `assigns=[]`, etc which may convey important information.
@@ -6,11 +7,15 @@ defmodule Iris.RPC do
 
   defmacrop debug_exception?(exception) do
     config =  Application.get_env(:iris, Iris)
-    if config && config[:debug] do
-      # IO.puts :stdio, "Iris Will Raise Errors"
-      quote do
-        stacktrace = System.stacktrace
-        reraise unquote(exception), stacktrace
+    if config do
+      case config[:error] do
+        :log -> quote do: Logger.error("Iris: #{inspect(unquote(exception))}")
+        :raise -> quote do
+            stacktrace = System.stacktrace
+            reraise unquote(exception), stacktrace
+          end
+        # Uses should explicitly use `:ignore`
+        _ -> nil
       end
     end
   end

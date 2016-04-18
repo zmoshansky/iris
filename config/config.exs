@@ -9,7 +9,8 @@ use Mix.Config
 # party users, it should be done in your mix.exs file.
 
 config :iris, Iris,
-  debug: false
+# Acceptable values include [:log, :raise, :ignore]
+error: :ignore
 
 config :iris, :public,
   allow: %{
